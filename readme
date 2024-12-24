@@ -7,46 +7,41 @@ Here’s a **README** template you can use for your Discord bot project:
 This is a **Discord bot** built using **discord.js** that provides essential server management features, including member greetings, custom welcome messages, and more.
 
 ## Features
+
 - **Custom Welcome Messages**: Greets new users with a personalized welcome message, using their Discord nickname or username.
 - **Moderation Tools**: Manages users, bans, kicks, and more (add future features here).
-- **Bot Presence**: Allows the bot to set its status to "Do Not Disturb" or other customizable statuses.
+
 
 ## Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/discord-bot.git
-   ```
+   git clone https://github.com/SergentGhost/Flappy.inc
 
 2. Navigate to the project directory:
-   ```bash
    cd discord-bot
-   ```
 
 3. Install the dependencies:
-   ```bash
    npm install
-   ```
+  
 
 4. Create a `.env` file in the root directory and add your bot's token:
-   ```bash
    TOKEN=your_discord_bot_token_here
-   ```
+   
 
 ## Usage
 
 1. To start the bot, run the following command:
-   ```bash
    node index.js
-   ```
 
 2. Once the bot is online, it will greet new members in your server with a random welcome message.
 
-## Development
+## Development Logs.
+ > Added More Commands 
+ > Can now mute for spaming 
+ > Do basic Modrations of the server
 
 ### Commands:
 - **`!help`**: Display a list of available commands (if implemented).
-- **`!ping`**: Check if the bot is online.
 
 ### Contribution:
 Feel free to fork this project and create pull requests if you would like to contribute new features or improvements.

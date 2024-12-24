@@ -1,4 +1,3 @@
-// index.js
 require('dotenv').config(); // Load environment variables
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
@@ -82,5 +81,9 @@ client.on('interactionCreate', async interaction => {
         }
     }
 });
+
+
+const automod = require('./automod.js');
+automod.execute(client);
 
 client.login(process.env.TOKEN);
