@@ -9,7 +9,8 @@ This is a **Discord bot** built using **discord.js** that provides essential ser
 ### Features  
 
 - **Custom Welcome Messages**: Greets new users with a personalized welcome message, using their Discord nickname or username.  
-- **Moderation Tools**: Manages users, bans, kicks, mutes spammers, and more.  
+- **Moderation Tools**: Manages users, bans, kicks, mutes spammers, and more.
+- **Invite Tracker**: Now it can track invite over the server.  
 
 ### Installation  
 
