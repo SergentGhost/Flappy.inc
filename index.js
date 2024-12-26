@@ -9,8 +9,7 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildVoiceStates, // Required for voice commands
+        GatewayIntentBits.MessageContent,// Required for voice commands
     ],
 });
 
@@ -82,8 +81,41 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
+const {
+    fetchInvites,
+    handleGuildMemberAdd,
+    getUserInvites,
+    getInviteLeaderboard,
+} = require('./inviteTracker.js');
 
-const automod = require('./automod.js');
-automod.execute(client);
+client.once('ready', async () => {
+    console.log(`Logged in as ${client.user.tag}!`);
+    await fetchInvites(client);
+});
+
+client.on('guildMemberAdd', async (member) => {
+    await handleGuildMemberAdd(member);
+});
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+
+    const args = message.content.split(' ');
+    const command = args[0].toLowerCase();
+
+    if (command === '!invites') {
+        const userInvites = getUserInvites(message.guild, message.author.id);
+        message.reply(`You have invited ${userInvites} member(s) to the server.`);
+    }
+
+    if (command === '!leaderboard') {
+        const leaderboard = getInviteLeaderboard(message.guild);
+        const leaderboardMessage = leaderboard
+            .slice(0, 10) // Limit to top 10
+            .map((entry, index) => `#${index + 1} ${entry.inviter}: ${entry.uses} invite(s)`)
+            .join('\n');
+        message.reply(`**Invite Leaderboard:**\n${leaderboardMessage}`);
+    }
+});
 
 client.login(process.env.TOKEN);
