@@ -2,7 +2,11 @@ require('dotenv').config(); // Load environment variables
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const commands = require('./commands.js'); // Import commands
+const commands = require('./commands.js'); 
+const exp = require('./exp.js');// Import commands
+const { assignRoleBasedOnAction, setupReactionRoleMessage } = require('./roleManager.js');
+
+
 
 // Create a new client instance
 const client = new Client({
@@ -88,10 +92,6 @@ const {
     getInviteLeaderboard,
 } = require('./inviteTracker.js');
 
-client.once('ready', async () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-    await fetchInvites(client);
-});
 
 client.on('guildMemberAdd', async (member) => {
     await handleGuildMemberAdd(member);
@@ -117,5 +117,76 @@ client.on('messageCreate', async (message) => {
         message.reply(`**Invite Leaderboard:**\n${leaderboardMessage}`);
     }
 });
+
+// Add XP for every message
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+
+    const xpGain = 10; // XP gained per message
+    const result = exp.addXP(message.author.id, message.guild.id, xpGain);
+
+    // Notify the user if they leveled up
+    if (result.leveledUp) {
+        message.channel.send(
+            `🎉 Congratulations ${message.author}, you've reached level ${result.level}!`
+        );
+
+        // Optional: Assign roles on leveling up
+        const levelRoles = {
+            5: 'Beginner', // Example roles for specific levels
+            10: 'Intermediate',
+            20: 'Expert',
+        };
+
+        if (levelRoles[result.level]) {
+            const role = message.guild.roles.cache.find(
+                (r) => r.name === levelRoles[result.level]
+            );
+            if (role) {
+                const member = message.guild.members.cache.get(message.author.id);
+                await member.roles.add(role).catch(console.error);
+                message.channel.send(`You have been granted the **${role.name}** role!`);
+            }
+        }
+    }
+});
+
+// Command to check user's level
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+
+    if (message.content.toLowerCase() === '!level') {
+        const userLevel = exp.getUserLevel(message.author.id, message.guild.id);
+        message.reply(
+            `You are level ${userLevel.level} with ${userLevel.xp} XP!`
+        );
+    }
+});
+
+
+// Automatically assign a role when a user joins the server
+client.on('guildMemberAdd', async (member) => {
+    await assignRoleBasedOnAction(member, 'Newbie'); // Replace 'Newbie' with your desired role name
+});
+
+// Command to set up a reaction role message
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+
+    const args = message.content.split(' ');
+    const command = args[0].toLowerCase();
+
+    if (command === '!setuproles') {
+        const roles = [
+            { name: 'Gamer', label: '🎮 Gamer' },
+            { name: 'Artist', label: '🎨 Artist' },
+            { name: 'Developer', label: '💻 Developer' },
+        ];
+
+        await setupReactionRoleMessage(message.channel, roles);
+        message.reply('Reaction role message set up!');
+    }
+});
+
 
 client.login(process.env.TOKEN);

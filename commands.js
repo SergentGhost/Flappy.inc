@@ -6,6 +6,8 @@ const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerSta
 
 // Array of commands
 const commands = [
+
+    
     // 1. Ping Command
     {
         data: new SlashCommandBuilder()

@@ -1,6 +1,4 @@
-
 # Hi, I'm Albert! 👋
-
 
 ## Flappy.inc  
 
@@ -10,7 +8,6 @@ This is a **Discord bot** built using **discord.js** that provides essential ser
 
 - **Custom Welcome Messages**: Greets new users with a personalized welcome message, using their Discord nickname or username.  
 - **Moderation Tools**: Manages users, bans, kicks, mutes spammers, and more.
-- **Invite Tracker**: Now it can track invite over the server.  
 
 ### Installation  
 
@@ -34,7 +31,7 @@ This is a **Discord bot** built using **discord.js** that provides essential ser
    TOKEN=your_discord_bot_token_here  
    ```  
 
-### Usage  
+### Usage  ( TO RUN IT ON YORU PC )
 
 1. To start the bot, run the following command:  
    ```bash  
@@ -45,13 +42,13 @@ This is a **Discord bot** built using **discord.js** that provides essential ser
 
 ### Development Logs  
 
-- Added more commands.  
-- Can now mute for spamming.  
-- Added basic moderation tools for server management.  
+- **Invite Tracker**: Now it can track invite over the server.  
+- **Added Reaction Role System** : Now it can give out reaction roles with the help of !setuproles Commd
+- **EXp and Lvl System** : The more you chat the more lvl you reach ( just a funny thing to waste time on )
 
 ### Commands  
 
-- **`!help`**: Display a list of available commands (if implemented).  
+- **`!help`**: Display a list of available commands .  
 
 
 ### Feedback
