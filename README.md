@@ -53,8 +53,14 @@ This is a **Discord bot** built using **discord.js** that provides essential ser
 
 ### Feedback
 
+Feel free to reach out to me! You can DM me on:
+
+Discord: ghost_05x
+Instagram: @albert__burney
+
 If you have any feedback, please reach out to us at geekysamz@gmail.com
-  
+
+I'm always open to chats about tech, collaboration, or just connecting with like-minded people!  
 
 ---
 
