@@ -1,12 +1,8 @@
 require('dotenv').config(); // Load environment variables
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
 const commands = require('./commands.js'); 
 const exp = require('./exp.js');// Import commands
 const { assignRoleBasedOnAction, setupReactionRoleMessage } = require('./roleManager.js');
-
-
 
 // Create a new client instance
 const client = new Client({
@@ -34,9 +30,10 @@ client.once('ready', () => {
     });
 });
 
+const { EmbedBuilder } = require('discord.js');
+
 // Array of random welcome messages
 const welcomeMessages = [
-    
     "Welcome to the server, {user}! We're excited to have you here! 🎉",
     "Hey {user}, welcome aboard! We're glad you're here! 🎊",
     "A warm welcome to {user}! Enjoy your stay! 🌟",
@@ -49,21 +46,35 @@ const welcomeMessages = [
     "Welcome to the server, {user}! We hope you find this place awesome! 🚀"
 ];
 
-
 // Greet new users with a random welcome message when they join the server
 client.on('guildMemberAdd', async (member) => {
-    const welcomeChannel = member.guild.systemChannel || member.guild.channels.cache.find(ch => ch.name === 'general'); // Choose a default channel
+    // Get the default system channel or fallback to a channel named "general"
+    const welcomeChannel = member.guild.systemChannel || member.guild.channels.cache.find(ch => ch.name === 'general');
     if (welcomeChannel) {
-        // Get the user's nickname or use their username if they don't have a nickname
-        const displayName = member.nickname || member.user.username;
+        // Get the user's display name
+        const displayName = member.user.username;
 
         // Pick a random welcome message
-        const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+        const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)]
+            .replace('{user}', displayName);
 
-        // Send the message with the user's nickname or username replaced
-        welcomeChannel.send(randomMessage.replace('{user}', displayName));
+        // Create an embed message
+        const embed = new EmbedBuilder()
+            .setColor('#1E90FF') // Set embed color
+            .setAuthor({
+                name: `Welcome, ${displayName}!`,
+                iconURL: member.user.displayAvatarURL({ dynamic: true }),
+            })
+            .setDescription(randomMessage)
+            .setThumbnail(member.user.displayAvatarURL({ dynamic: true })) // Add user's profile picture
+            .setFooter({ text: `Member #${member.guild.memberCount}` }) // Show member count
+            .setTimestamp(); // Add timestamp
+
+        // Send the embed to the welcome channel
+        welcomeChannel.send({ embeds: [embed] });
     }
 });
+
 
 // Handle interactions (slash commands)
 client.on('interactionCreate', async interaction => {
@@ -86,7 +97,6 @@ client.on('interactionCreate', async interaction => {
 });
 
 const {
-    fetchInvites,
     handleGuildMemberAdd,
     getUserInvites,
     getInviteLeaderboard,
@@ -118,48 +128,45 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// Add XP for every message
-client.on('messageCreate', async (message) => {
+const { addXP, getUserLevel } = require('./src/exp.js');
+
+client.on('messageCreate', (message) => {
     if (message.author.bot) return;
 
-    const xpGain = 10; // XP gained per message
-    const result = exp.addXP(message.author.id, message.guild.id, xpGain);
+    // Add XP to the user when they send a message
+    const xpGain = Math.floor(Math.random() * 10) + 5; // Random XP between 5-15
+    const result = addXP(message.member, xpGain);
 
-    // Notify the user if they leveled up
+    // Optionally log level-ups in the server
     if (result.leveledUp) {
-        message.channel.send(
-            `🎉 Congratulations ${message.author}, you've reached level ${result.level}!`
-        );
+        const levelUpEmbed = new EmbedBuilder()
+            .setColor('#FFD700')
+            .setAuthor({ name: message.member.displayName, iconURL: message.member.displayAvatarURL() })
+            .setTitle('🎉 Level Up!')
+            .setDescription(`${message.member} has reached **Level ${result.level}**!`)
+            .setFooter({ text: 'Keep it up!' });
 
-        // Optional: Assign roles on leveling up
-        const levelRoles = {
-            5: 'Beginner', // Example roles for specific levels
-            10: 'Intermediate',
-            20: 'Expert',
-        };
-
-        if (levelRoles[result.level]) {
-            const role = message.guild.roles.cache.find(
-                (r) => r.name === levelRoles[result.level]
-            );
-            if (role) {
-                const member = message.guild.members.cache.get(message.author.id);
-                await member.roles.add(role).catch(console.error);
-                message.channel.send(`You have been granted the **${role.name}** role!`);
-            }
-        }
+        message.channel.send({ embeds: [levelUpEmbed] });
     }
 });
 
-// Command to check user's level
-client.on('messageCreate', async (message) => {
+// Command to check user level
+client.on('messageCreate', (message) => {
     if (message.author.bot) return;
 
-    if (message.content.toLowerCase() === '!level') {
-        const userLevel = exp.getUserLevel(message.author.id, message.guild.id);
-        message.reply(
-            `You are level ${userLevel.level} with ${userLevel.xp} XP!`
-        );
+    const args = message.content.split(' ');
+    const command = args[0].toLowerCase();
+
+    if (command === '!level') {
+        const userLevelData = getUserLevel(message.author.id, message.guild.id);
+        const embed = new EmbedBuilder()
+            .setColor('#1E90FF')
+            .setAuthor({ name: message.member.displayName, iconURL: message.member.displayAvatarURL() })
+            .setTitle('📊 Your Level & XP')
+            .setDescription(`**Level**: ${userLevelData.level}\n**XP**: ${userLevelData.xp}/${userLevelData.requiredXP}`)
+            .setFooter({ text: 'Keep participating to earn more XP!' });
+
+        message.reply({ embeds: [embed] });
     }
 });
 
@@ -188,5 +195,21 @@ client.on('messageCreate', async (message) => {
     }
 });
 
+const games = require('./src/game.js');
+
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+
+  const args = message.content.split(' ');
+  const command = args[0].toLowerCase();
+
+  if (command === '!guessnumber') {
+    await games.guessNumber(message);
+  } else if (command === '!tictactoe') {
+    await games.ticTacToe(message);
+  } else if (command === '!games') {
+    message.channel.send("🎮 Available games: `!guessnumber` and `!tictactoe`. Type a command to start!");
+  }
+});
 
 client.login(process.env.TOKEN);
